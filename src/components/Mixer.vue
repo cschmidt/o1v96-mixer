@@ -29,11 +29,12 @@
       <Fader
         v-for="channel in channels"
         :key="channel"
+        :channel="channel"
         :label="channel.toString()"
         :value="faders[channel]"
-        @update:value="setFaderValue(channel, $event)"
+        @update="setFaderValue"
       />
-      <Fader label="STEREO" :value="master" @update:value="master = $event" />
+      <Fader label="STEREO" :value="master" :channel="'master'" @update="setFaderValue" />
     </div>
   </div>
 </template>
@@ -47,10 +48,12 @@ export default {
     Fader
   },
   setup() {
+    console.log('setup!');
     const faders = ref([...Array(16)].map(() => 63));  // Middle position for demonstration
     const master = ref(63);  // Master fader's initial value
 
-    const setFaderValue = (channel, value) => {
+    const setFaderValue = ({channel, value}) => {
+      console.log('setFaderValue', channel, value);
       faders.value[channel - 1] = value;
       // Here, you would typically send the new value to your backend or the mixer's API
     };

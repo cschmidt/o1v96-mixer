@@ -89,7 +89,8 @@ export default {
     };
   },
   props: {
-    label: String
+    label: String,
+    channel: Number | String
   },
   mounted() {
     document.addEventListener("mousemove", (e) => {
@@ -114,6 +115,8 @@ export default {
         100 -
         ((clamp(e.clientY, rect.top, rect.bottom) - rect.top) / rect.height) *
           100;
+      let event = {channel: this.channel, value: this.value};
+      this.$emit('update', event);
     },
     onClick(e) {
       this.update(e);
