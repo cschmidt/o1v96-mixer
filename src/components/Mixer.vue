@@ -48,14 +48,14 @@ export default {
     Fader
   },
   setup() {
-    console.log('setup!');
+    const socket = new WebSocket(`ws://${window.location.hostname}:3000`);
     const faders = ref([...Array(16)].map(() => 63));  // Middle position for demonstration
     const master = ref(63);  // Master fader's initial value
 
     const setFaderValue = ({channel, value}) => {
-      console.log('setFaderValue', channel, value);
       faders.value[channel - 1] = value;
-      // Here, you would typically send the new value to your backend or the mixer's API
+      let message = {channel, level: value};
+      socket.send(JSON.stringify(message));
     };
 
     return {
