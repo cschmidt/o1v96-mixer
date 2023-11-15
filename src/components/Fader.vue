@@ -1,4 +1,77 @@
 // Based on https://codepen.io/lzl124631x/pen/wvGBwKV
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from 'vue'
+
+let dragging = false
+const faderLevel = ref(0);
+const sliderContainer = ref<HTMLDivElement | null>(null)
+
+const emit = defineEmits(['update:modelValue'])
+
+const props = defineProps<{
+  label: String,
+  channel: String,
+  modelValue: number
+}>()
+
+const value = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value, props.channel)
+    faderLevel.value = value
+  }
+})
+
+
+function clamp(val: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, val))
+}
+
+
+function onMouseDown(e : MouseEvent) {
+  dragging = true
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
+}
+
+
+function onMouseMove(e : MouseEvent) {
+  if (dragging) update(e)
+}
+
+
+function onMouseUp(e : MouseEvent) {
+  dragging = false
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+}
+
+
+function update(e : MouseEvent) {
+  const rect = sliderContainer.value?.getBoundingClientRect()
+  if (rect) {
+    const updatedLevel =
+      100 -
+      ((clamp(e.clientY, rect.top, rect.bottom) - rect.top) / rect.height) * 100
+    value.value = updatedLevel
+  }
+}
+
+
+onMounted(() => {
+  faderLevel.value = props.modelValue
+})
+
+
+watch(() => props.modelValue, (newValue) => {
+  faderLevel.value = newValue;
+});
+</script>
+
+
+
 <style scoped>
 * {
   margin: 0;
@@ -49,7 +122,7 @@
     height: 4em;
     border-radius: 5%;
     background-color: red;
-    background-image: var(--image-url);
+    background-image: url('/mixer-knob.jpg');
     position: absolute;
     left: 50%;
     transform: translate(-50%, 50%);
@@ -59,13 +132,13 @@
 <!-- Use preprocessors via the lang attribute! e.g. <template lang="pug"> -->
 <template>
   <div class="slider">
-    <div class="slider-value">{{ Math.round(value) }}</div>
-    <div class="slider-hit-area" @click="onClick">
-      <div class="slider-container" ref="container">
-        <div class="filled" :style="{ height: value + '%' }"></div>
+    <div class="slider-value">{{ Math.round(faderLevel) }}</div>
+    <div class="slider-hit-area" @click="update">
+      <div class="slider-container" ref="sliderContainer">
+        <div class="filled" :style="{ height: faderLevel + '%' }"></div>
         <div
           class="handle"
-          :style="{ bottom: value + '%', '--image-url': 'url(' + imageUrl + ')' }"
+          :style="{ bottom: faderLevel + '%' }"
           @mousedown="onMouseDown"
         ></div>
       </div>
@@ -74,53 +147,3 @@
   </div>
 </template>
 
-<script>
-import mixerKnobImage from '../assets/mixer-knob.jpg';
-
-function clamp(val, min, max) {
-  return Math.max(min, Math.min(max, val));
-}
-export default {
-  data() {
-    return {
-      value: 30,
-      dragging: false,
-      imageUrl: mixerKnobImage
-    };
-  },
-  props: {
-    label: String,
-    channel: Number | String
-  },
-  mounted() {
-    document.addEventListener("mousemove", (e) => {
-      if (!this.dragging) return;
-      this.update(e);
-    });
-    document.addEventListener("mouseup", (e) => {
-      this.dragging = false;
-    });
-  },
-  methods: {
-    onMouseDown() {
-      this.dragging = true;
-    },
-    getRect() {
-      const container = this.$refs.container;
-      return container.getBoundingClientRect();
-    },
-    update(e) {
-      const rect = this.getRect();
-      this.value =
-        100 -
-        ((clamp(e.clientY, rect.top, rect.bottom) - rect.top) / rect.height) *
-          100;
-      let event = {channel: this.channel, value: this.value};
-      this.$emit('update', event);
-    },
-    onClick(e) {
-      this.update(e);
-    }
-  }
-};
-</script>

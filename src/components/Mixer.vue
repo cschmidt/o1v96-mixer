@@ -1,4 +1,27 @@
 <!-- Mixer.vue -->
+<script setup lang="ts">
+import { ref } from 'vue';
+import Fader from './Fader.vue';
+const socket = new WebSocket(`ws://${window.location.hostname}:3000`);
+const faders = ref([...Array(16)].map(() => 50));  // Middle position for demonstration
+const masterLevel = ref(63);  // Master fader's initial value
+const channels = [...Array(16).keys()].map(i => i + 1)
+
+let lastSentFaderValue = {channel: "-1", level: -1}
+
+function sendFaderValue(level : number, channel : string) {
+  let message = {channel, level}
+  if (message.channel == lastSentFaderValue.channel && 
+      message.level == lastSentFaderValue.level) {
+    // console.log('ignoring duplicate', message)
+  } else {
+    lastSentFaderValue = message
+    console.log('sending', message)
+    socket.send(JSON.stringify(message))
+  }
+}
+</script>
+
 <template>
   <div class="mixer">
     <div class="mixer-controls">
@@ -28,45 +51,20 @@
     <div class="faders">
       <Fader
         v-for="channel in channels"
+        v-model="faders[channel-1]"
         :key="channel"
-        :channel="channel"
         :label="channel.toString()"
-        :value="faders[channel]"
-        @update="setFaderValue"
+        :channel="channel.toString()"
+        @update:modelValue="sendFaderValue"
       />
-      <Fader label="STEREO" :value="master" :channel="'master'" @update="setFaderValue" />
+      <Fader 
+        v-model="masterLevel" 
+        :label="'STEREO'" 
+        :channel="'master'" 
+        @update:modelValue="sendFaderValue" />
     </div>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue';
-import Fader from './Fader.vue';
-
-export default {
-  components: {
-    Fader
-  },
-  setup() {
-    const socket = new WebSocket(`ws://${window.location.hostname}:3000`);
-    const faders = ref([...Array(16)].map(() => 63));  // Middle position for demonstration
-    const master = ref(63);  // Master fader's initial value
-
-    const setFaderValue = ({channel, value}) => {
-      faders.value[channel - 1] = value;
-      let message = {channel, level: value};
-      socket.send(JSON.stringify(message));
-    };
-
-    return {
-      faders,
-      master,
-      channels: [...Array(16).keys()].map(i => i + 1),
-      setFaderValue
-    };
-  }
-};
-</script>
 
 <style scoped>
 .mixer-controls {
