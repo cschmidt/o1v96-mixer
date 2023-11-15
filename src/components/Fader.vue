@@ -1,6 +1,6 @@
 // Based on https://codepen.io/lzl124631x/pen/wvGBwKV
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 let dragging = false
 const faderLevel = ref(0);
@@ -30,31 +30,42 @@ function clamp(val: number, min: number, max: number) {
 }
 
 
-function onMouseDown(e : MouseEvent) {
+function startInteraction(event: MouseEvent | TouchEvent) {
+  event.preventDefault()
   dragging = true
-  document.addEventListener('mousemove', onMouseMove)
-  document.addEventListener('mouseup', onMouseUp)
+  const moveEvent = event instanceof MouseEvent ? 'mousemove' : 'touchmove'
+  const endEvent = event instanceof MouseEvent ? 'mouseup' : 'touchend'
+
+  document.addEventListener(moveEvent, onInteractionMove, { passive: false })
+  document.addEventListener(endEvent, endInteraction, { passive: false })
 }
 
 
-function onMouseMove(e : MouseEvent) {
-  if (dragging) update(e)
+function onInteractionMove(event: MouseEvent | TouchEvent) {
+  event.preventDefault()
+  if (dragging) {
+    // Use the first touch point for touch events
+    const point = event instanceof MouseEvent ? event : event.touches[0]
+    update(point.clientY)
+  }
 }
 
 
-function onMouseUp(e : MouseEvent) {
-  dragging = false
-  document.removeEventListener('mousemove', onMouseMove)
-  document.removeEventListener('mouseup', onMouseUp)
+function endInteraction() {
+  dragging = false;
+  document.removeEventListener('mousemove', onInteractionMove)
+  document.removeEventListener('touchmove', onInteractionMove)
+  document.removeEventListener('mouseup', endInteraction)
+  document.removeEventListener('touchend', endInteraction)
 }
 
 
-function update(e : MouseEvent) {
+function update(clientY : number) {
   const rect = sliderContainer.value?.getBoundingClientRect()
   if (rect) {
     const updatedLevel =
       100 -
-      ((clamp(e.clientY, rect.top, rect.bottom) - rect.top) / rect.height) * 100
+      ((clamp(clientY, rect.top, rect.bottom) - rect.top) / rect.height) * 100
     value.value = updatedLevel
   }
 }
@@ -64,6 +75,9 @@ onMounted(() => {
   faderLevel.value = props.modelValue
 })
 
+onUnmounted(() => {
+  endInteraction(); // Ensure all events are removed when component is unmounted
+});
 
 watch(() => props.modelValue, (newValue) => {
   faderLevel.value = newValue;
@@ -139,7 +153,8 @@ watch(() => props.modelValue, (newValue) => {
         <div
           class="handle"
           :style="{ bottom: faderLevel + '%' }"
-          @mousedown="onMouseDown"
+          @mousedown="startInteraction"
+          @touchstart="startInteraction"
         ></div>
       </div>
     </div>
