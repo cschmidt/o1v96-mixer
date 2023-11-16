@@ -1,11 +1,11 @@
 # TODO
 
 ## Mixing functionality
-- make back end send basic channel updates to front end
 - initialize fader levels when connecting
+- support paired sliders
+- support multiple touch events
 - support aux busses
 - wire up master/stereo fader
-- make faders work with touch events on a tablet
 - fully responsive mixer layout with awesome tablet (and phone?) support
 
 ## Packaging and deployment
@@ -21,9 +21,11 @@
 - need a nice loading/connecting screen
 - client should reconnect after server restart or other disconnect
 - de-duplicating and rate limiting of messages
-- disconnect from mixer when service shuts down
 - allow mixer to be hot-plugged (right now the mixer must be plugged in when the
   service starts)
 
 # DONE
 - wire up websockets, make faders send basic channel updates to back end
+- make faders work with touch events on a tablet
+- make back end send basic channel updates to front end
+- disconnect from mixer when service shuts down

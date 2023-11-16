@@ -9,12 +9,22 @@ const channels = [...Array(16).keys()].map(i => i + 1)
 
 let lastSentFaderValue = {channel: "-1", level: -1}
 
+socket.onmessage = (event) => {
+  console.log('received', event.data)
+  let parsedData = JSON.parse(event.data)
+  console.log('parsedData', parsedData)
+  if (parsedData.type == 'FADER') {
+    faders.value[parsedData.channel] = Math.round(parsedData.level/1023*100)
+  }
+}
+
 function sendFaderValue(level : number, channel : string) {
   let message = {channel, level}
   if (message.channel == lastSentFaderValue.channel && 
       message.level == lastSentFaderValue.level) {
     // console.log('ignoring duplicate', message)
-  } else {
+  } else if (!Number.isNaN(message.level)) {
+    // FIXME: shouldn't have to check for NaN, figure out why we're sending that
     lastSentFaderValue = message
     console.log('sending', message)
     socket.send(JSON.stringify(message))

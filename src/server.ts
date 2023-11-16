@@ -26,24 +26,15 @@ app.get("/api/v1/hello", (_req, res) => {
 })
 
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM signal received.')
+function cleanup(signal: String) {
+  console.info(`${signal} received.`)
   mixer.disconnect()
   process.exit(0)
-})
+}
 
-process.on('SIGINT', () => {
-  console.info('SIGINT signal received.')
-  mixer.disconnect()
-  process.exit(0)
-})
-
-process.on('SIGQUIT', () => {
-  console.info('SIGQUIT signal received.')
-  mixer.disconnect()
-  process.exit(0)
-})
-
+['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach(signal =>{
+  process.on(signal, () => cleanup(signal))
+} )
 
 const server = app.listen(3000)
 
@@ -53,4 +44,12 @@ server.on('upgrade', (request, socket, head) => {
   })
 })
 
+mixer.onFaderMove((message) => {
+  wss.clients.forEach(function each(client) {
+    console.info('broadcasting', message)
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message))
+    }
+  })
+})
 mixer.connect()
