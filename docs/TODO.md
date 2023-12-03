@@ -20,7 +20,7 @@
 - ensure websockets connection works on more than localhost
 - need a nice loading/connecting screen
 - client should reconnect after server restart or other disconnect
-- de-duplicating and rate limiting of messages
+- consider rate limiting of messages (might not be necessary)
 - allow mixer to be hot-plugged (right now the mixer must be plugged in when the
   service starts)
 
@@ -29,3 +29,4 @@
 - make faders work with touch events on a tablet
 - make back end send basic channel updates to front end
 - disconnect from mixer when service shuts down
+- de-duplicating of fader level messages

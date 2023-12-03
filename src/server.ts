@@ -8,7 +8,9 @@ import * as mixer from './mixer.ts'
 function handleMessage(rawMessage) {
   let message = JSON.parse(rawMessage.toString())
   console.log('parsed message', message)
-  let mixerMessage = mixer.createFaderLevelMessage(message.channel, message.level)
+  let scaledLevel = Math.round(mixer.MAX_FADER_LEVEL * level / 100)
+
+  let mixerMessage = mixer.createFaderLevelMessage(message.channel, scaledLevel)
   if (mixer.connected()) {
     mixer.send(mixerMessage)
   }

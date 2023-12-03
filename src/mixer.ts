@@ -1,10 +1,11 @@
 import * as usb from 'usb'
 import { EventEmitter } from 'events'
 
-
+// USB Vendor ID for Yamaha
 const YAMAHA = 1177
+// USB device ID for the O1V96
 const O1V96 = 20488
-const MAX_FADER_LEVEL = 1023
+export const MAX_FADER_LEVEL = 1023
 const USB_PACKET_SIZE = 64
 
 const MESSAGE_PREAMBLE = [0xf0, 0x43, 0x10, 0x3e, 0x7f, 0x01]
@@ -21,18 +22,18 @@ const eventEmitter = new EventEmitter()
 
 
 
-function decode7Bit(msb, lsb) {
+function decode7Bit(msb: number, lsb:number) {
   return parseInt((msb << 7 | lsb).toString(2),2)
 }
 
 
-function encode7Bit(number) {
+function encode7Bit(n: number) {
   const buffer = []
   do {
-    let sevenBits = number & 0x7F  
+    let sevenBits = n & 0x7F  
     buffer.unshift(sevenBits)
-    number = number >> 7  
-  } while (number > 0)  
+    n = n >> 7  
+  } while (n > 0)  
   return buffer
 }
 
@@ -40,7 +41,7 @@ export function onFaderMove(handler) {
   eventEmitter.on(FADER_MOVE, handler)
 }
 
-function messageFromData(data) {
+function messageFromData(data: number[]) {
   // byte 9 indicates param type 
   // 1c is a fader change
   // 1a is channel on/off
