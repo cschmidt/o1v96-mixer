@@ -1,2 +1,0 @@
-#!/bin/bash
-tar --no-xattrs --exclude node_modules --exclude dist -cvf dist/o1v96-mixer.tar * 
