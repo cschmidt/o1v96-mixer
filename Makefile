@@ -4,20 +4,32 @@
 include ENV
 
 # Define variables
+PACKAGE_NAME=o1v96-mixer
 OUTPUT_DIR=./dist
-TAR_FILE=o1v96-mixer.tar.gz
+TAR_FILE=$(PACKAGE_NAME).tar.gz
 REMOTE_DIR=~/projects/o1v96-mixer
-DIST_FILE=$(OUTPUT_DIR)/$(TAR_FILE)
+
+
 
 # Default target
-all: package deploy
+all: build package
+
+
+build:
+	rm -rf $(OUTPUT_DIR)
+	mkdir -p $(OUTPUT_DIR)/node_modules
+	npm install
+	npm run build-client 
+	npm run build-server
 
 # Package the output files
 package:
 	@echo "Packaging files..."
-	tar --disable-copyfile -czv --no-xattrs \
+	rm -f $(OUTPUT_DIR)/$(TAR_FILE)
+	cd $(OUTPUT_DIR); \
+	tar --disable-copyfile -cz --no-xattrs \
 	--exclude node_modules --exclude dist --exclude '.DS_Store' \
-	-f $(DIST_FILE) * 
+	-f $(TAR_FILE) *
 
 # Deploy the package to the remote server
 deploy: package
@@ -26,4 +38,4 @@ deploy: package
 	@echo "Deploying to $(SSH_HOST)..."
 	scp $(DIST_FILE) $(SSH_USER)@$(SSH_HOST):$(REMOTE_DIR)
 
-.PHONY: package deploy
+.PHONY: build package deploy

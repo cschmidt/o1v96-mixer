@@ -210,3 +210,10 @@ one of the deps.
 
   --- stderr
   Traceback (most recent call last):
+
+So, thinking I'd want a ChannelStrip component that would be comprised of:
+ - fader
+ - pan
+ - mute (channel on/off)
+ - level meter
+ 
