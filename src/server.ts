@@ -1,7 +1,7 @@
 import express from 'express'
 import * as http from 'http'
 import WebSocket, { WebSocketServer } from 'ws'
-import * as mixer from './mixer.ts'
+import * as mixer from './mixer'
 
 
 
