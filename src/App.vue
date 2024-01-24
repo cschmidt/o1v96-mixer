@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import Mixer from './components/Mixer.vue'
-import Fader from './components/Fader2.vue'
 import {ref} from 'vue'
-
-let faderLevels = ref([10,20])
 </script>
 
 
