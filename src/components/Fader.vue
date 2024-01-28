@@ -147,7 +147,7 @@ watch(() => props.modelValue, (newValue) => {
 <template>
   <div class="slider">
     <div class="slider-value">{{ Math.round(faderLevel) }}</div>
-    <div class="slider-hit-area" @click="update">
+    <div class="slider-hit-area">
       <div class="slider-container" ref="sliderContainer">
         <div class="filled" :style="{ height: faderLevel + '%' }"></div>
         <div
