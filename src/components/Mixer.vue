@@ -23,7 +23,8 @@ function sendFaderValue(level : number, channel : string) {
   if (message.channel == lastSentFaderValue.channel && 
       message.level == lastSentFaderValue.level) {
     // console.log('ignoring duplicate', message)
-  } else if (!Number.isNaN(message.level)) {
+  } else if (!Number.isNaN(message.level) &&
+    socket.readyState == WebSocket.OPEN) {
     // FIXME: shouldn't have to check for NaN, figure out why we're sending that
     lastSentFaderValue = message
     console.log('sending', message)
