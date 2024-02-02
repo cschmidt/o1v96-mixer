@@ -14,18 +14,23 @@ with all the other cool new digital mixers. This project endeavours to fix that.
 There are some existing efforts that strive to address this (see below), but for
 various reasons they just don't quite work for me. The biggest issue is that the
 other projects interface with the O1V96 via the Yamaha USB-MIDI driver, which is
-only available on Windows and Mac. That means you can't use something cheap and
-small like a Raspberry Pi. This project interfaces directly with the O1V96 over
-USB, targetting the Raspberry Pi as the host environment.
+[only available on Windows and Mac](https://usa.yamaha.com/products/contents/music_production/downloads/firmware_software/index.html?c=music_production&k=USB-MIDI). 
+That means you can't use something cheap and small like a Raspberry Pi. This
+project interfaces directly with the O1V96 over USB, targetting the Raspberry Pi
+as the host environment.
 
 While I'm primarily making this to serve my own needs, if there are other folks
 out there who would find this useful 
 [I'd love to hear about it](https://github.com/cschmidt/o1v96-mixer/discussions/19).
 
-# Related Projects
+# Related Projects and References
 
 ## remote-mixer
 https://github.com/kryops/remote-mixer
 
 ## O1v96 Remote (iPad app)
 https://apps.apple.com/us/app/01v96-remote/id400947756
+
+## Owner's Manual
+See the MIDI Data Format section starting on page 306 of [the official owner's 
+manual for the O1V96](https://usa.yamaha.com/files/download/other_assets/5/334235/01v96v2_om_en_f0.pdf)
