@@ -145,7 +145,7 @@ class ParamRequestMessage extends GenericMessage {
 }
 
 
-function kInputChannelNameChange(channel: number, shortName: String, longName: String) {
+export function kInputChannelNameChange(channel: number, shortName: String, longName: String) {
   let messages = []
   // message numbers 1 through 4 are the short name characters
   let shortNameIndex=0
@@ -173,7 +173,7 @@ function kInputChannelNameChange(channel: number, shortName: String, longName: S
 }
 
 
-function kInputChannelNameRequest(channel: number) {
+export function kInputChannelNameRequest(channel: number) {
   let messages = []
   for(let i = 0; i < 20; i++) {
     let messageBytes = 
@@ -187,7 +187,7 @@ function kInputChannelNameRequest(channel: number) {
 }
 
 
-function kInputChannelOnChange(channel: number, isOn: boolean ) {
+export function kInputChannelOnChange(channel: number, isOn: boolean ) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kInputChannelOn, DataType.PATCH)
     .channel(channel)
     .data(isOn ? 1 : 0)
@@ -195,7 +195,7 @@ function kInputChannelOnChange(channel: number, isOn: boolean ) {
 }
 
 
-function kInputChannelOnRequest(channel: number) {
+export function kInputChannelOnRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kInputChannelOn)
     .channel(channel)
     .bytes()
@@ -206,7 +206,7 @@ function kInputChannelOnRequest(channel: number) {
  * @param channel 
  * @param pan from -63 to 63
  */
-function kInputChannelPanChange(channel: number, pan: number) {
+export function kInputChannelPanChange(channel: number, pan: number) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kInputChannelPan)
     .channel(channel)
     .data(pan)
@@ -214,7 +214,7 @@ function kInputChannelPanChange(channel: number, pan: number) {
 }
 
 
-function kInputChannelPanRequest(channel: number) {
+export function kInputChannelPanRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kInputChannelPan)
     .channel(channel)
     .bytes()
@@ -229,7 +229,7 @@ function kInputChannelPanRequest(channel: number) {
  * @param level from 0 to MAX_FADER_LEVEL (outside values will be clamped)
  * @returns 
  */
-function kInputFaderChange(channel: number, level: number) {
+export function kInputFaderChange(channel: number, level: number) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kInputFader)
     .channel(channel)
     .data(clamp(level, 0, MAX_FADER_LEVEL))
@@ -237,14 +237,20 @@ function kInputFaderChange(channel: number, level: number) {
 }
 
 
-function kInputFaderRequest(channel: number) {
+/**
+ * Creates a message to request the current fader level of an input channel.
+ * 
+ * @param channel the input channel number (1-32)
+ * @returns 
+ */
+export function kInputFaderRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kInputFader)
     .channel(channel)
     .bytes()
 }
 
 
-function kInputPairChange(channel: number, onOff: boolean) {
+export function kInputPairChange(channel: number, onOff: boolean) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kInputPair)
     .channel(channel)
     .data(onOff ? 1 : 0)
@@ -252,14 +258,14 @@ function kInputPairChange(channel: number, onOff: boolean) {
 }
 
 
-function kInputPairRequest(channel: number) {
+export function kInputPairRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kInputPair)
     .channel(channel)
     .bytes()
 }
 
 
-function kStereoChannelOnChange(channel: number, onOff: boolean) {
+export function kStereoChannelOnChange(channel: number, onOff: boolean) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kStereoChannelOn)
     .channel(channel)
     .data(onOff ? 1 : 0)
@@ -267,14 +273,14 @@ function kStereoChannelOnChange(channel: number, onOff: boolean) {
 }
 
 
-function kStereroChannelOnRequest(channel: number) {
+export function kStereroChannelOnRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kStereoChannelOn)
     .channel(channel)
     .bytes()
 }
 
 
-function kStereoFaderChange(channel: number, level: number) {
+export function kStereoFaderChange(channel: number, level: number) {
   return new ParamChangeMessage(MessageType.UNIVERSAL, Elements.kStereoFader)
     .channel(channel)
     .data(clamp(level, 0, MAX_FADER_LEVEL))
@@ -282,7 +288,7 @@ function kStereoFaderChange(channel: number, level: number) {
 }
 
 
-function kStereoFaderRequest(channel: number) {
+export function kStereoFaderRequest(channel: number) {
   return new ParamRequestMessage(MessageType.UNIVERSAL, Elements.kStereoFader)
     .channel(channel)
     .bytes()
