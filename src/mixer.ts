@@ -1,5 +1,7 @@
 import * as usb from 'usb'
 import { EventEmitter } from 'events'
+import * as messages from './messages'
+
 
 // USB Vendor ID for Yamaha
 const YAMAHA = 1177
@@ -105,11 +107,11 @@ export function createFaderLevelMessage(channel : number, level : number) {
   }
   messageBytes[11] = levelBytes[0]
   messageBytes[12] = levelBytes[1]
-  return Buffer.from(messageBytes)
+  return messageBytes
 }
 
 
-function wrapSysexMessage(msg) {
+function wrapSysexMessage(msg: Buffer) {
   const SYSEX_START_OR_CONTINUE = 0x04
   const SYSEX_END_ONE_BYTE = 0x05
   const SYSEX_END_TWO_BYTES = 0x06
@@ -146,8 +148,8 @@ function wrapSysexMessage(msg) {
 }
 
 
-export function send(msgBytes : Buffer) {
-  var usbMessage = wrapSysexMessage(msgBytes)
+export function send(msgBytes : number[]) {
+  var usbMessage = wrapSysexMessage(Buffer.from(msgBytes))
   if (outEndpoint != undefined) {
     console.log('Sending', usbMessage)
     outEndpoint.transfer(usbMessage, handleTransferResult)
@@ -227,6 +229,14 @@ export function disconnect() {
 export function connected() {
   return mixer != undefined
 }
+
+
+export function syncFaders() {
+  for(let channel = 1; channel++; channel <= 16) {
+    send(messages.kInputFaderRequest( channel))
+  }
+}
+
 
 function checkConnected() {
   if (mixer == undefined) {

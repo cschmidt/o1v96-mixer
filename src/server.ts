@@ -20,6 +20,7 @@ console.log(WebSocket)
 const wss = new WebSocketServer({ noServer: true })
 wss.on('connection', socket => {
   socket.on('message', message => handleMessage(message))
+  mixer.syncFaders()
 })
 
 const app = express()
