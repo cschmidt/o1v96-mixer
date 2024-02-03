@@ -23,10 +23,7 @@ wss.on('connection', socket => {
 })
 
 const app = express()
-app.get("/api/v1/hello", (_req, res) => {
-  res.json({ message: "Hello, world!" })
-})
-
+app.use(express.static('dist'))
 
 function cleanup(signal: String) {
   console.info(`${signal} received.`)
