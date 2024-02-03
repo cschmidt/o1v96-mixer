@@ -39,7 +39,7 @@ function encode7Bit(n: number) {
   return buffer
 }
 
-export function onFaderMove(handler) {
+export function onFaderMove(handler: (message: object) => void) {
   eventEmitter.on(FADER_MOVE, handler)
 }
 
