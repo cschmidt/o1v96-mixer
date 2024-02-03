@@ -37,7 +37,7 @@ function encode7Bit(n: number) {
   return buffer
 }
 
-export function onFaderMove(handler) {
+export function onFaderMove(handler: (message: object) => void) {
   eventEmitter.on(FADER_MOVE, handler)
 }
 
@@ -109,7 +109,7 @@ export function createFaderLevelMessage(channel : number, level : number) {
 }
 
 
-function wrapSysexMessage(msg) {
+function wrapSysexMessage(msg: Buffer) {
   const SYSEX_START_OR_CONTINUE = 0x04
   const SYSEX_END_ONE_BYTE = 0x05
   const SYSEX_END_TWO_BYTES = 0x06

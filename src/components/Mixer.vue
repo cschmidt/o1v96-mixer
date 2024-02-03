@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Fader from './Fader.vue';
-const socket = new WebSocket(`ws://${window.location.hostname}:3000`);
+const socket = new WebSocket(`ws://${window.location.hostname}`);
 const faders = ref([...Array(16)].map(() => 50));  // Middle position for demonstration
 const masterLevel = ref(63);  // Master fader's initial value
 const channels = [...Array(16).keys()].map(i => i + 1)

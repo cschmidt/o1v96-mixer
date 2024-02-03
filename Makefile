@@ -38,4 +38,7 @@ deploy: package
 	@echo "Deploying to $(SSH_HOST)..."
 	scp $(DIST_FILE) $(SSH_USER)@$(SSH_HOST):$(REMOTE_DIR)
 
-.PHONY: build package deploy
+run: build
+	node $(OUTPUT_DIR)/server.js
+
+.PHONY: build package deploy run

@@ -5,11 +5,10 @@ import * as mixer from './mixer'
 
 
 
-function handleMessage(rawMessage) {
+function handleMessage(rawMessage: object) {
   let message = JSON.parse(rawMessage.toString())
   console.log('parsed message', message)
-  let scaledLevel = Math.round(mixer.MAX_FADER_LEVEL * level / 100)
-
+  let scaledLevel = Math.round(mixer.MAX_FADER_LEVEL * message.level / 100)
   let mixerMessage = mixer.createFaderLevelMessage(message.channel, scaledLevel)
   if (mixer.connected()) {
     mixer.send(mixerMessage)
@@ -23,10 +22,7 @@ wss.on('connection', socket => {
 })
 
 const app = express()
-app.get("/api/v1/hello", (_req, res) => {
-  res.json({ message: "Hello, world!" })
-})
-
+app.use(express.static('dist'))
 
 function cleanup(signal: String) {
   console.info(`${signal} received.`)
@@ -38,7 +34,7 @@ function cleanup(signal: String) {
   process.on(signal, () => cleanup(signal))
 } )
 
-const server = app.listen(3000)
+const server = app.listen(80)
 
 server.on('upgrade', (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, socket => {
@@ -46,7 +42,7 @@ server.on('upgrade', (request, socket, head) => {
   })
 })
 
-mixer.onFaderMove((message) => {
+mixer.onFaderMove((message: object) => {
   wss.clients.forEach(function each(client) {
     console.info('broadcasting', message)
     if (client.readyState === WebSocket.OPEN) {
