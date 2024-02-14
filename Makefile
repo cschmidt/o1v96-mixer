@@ -23,20 +23,19 @@ build:
 	npm run build-server
 
 # Package the output files
-package:
+package: build
 	@echo "Packaging files..."
 	rm -f $(OUTPUT_DIR)/$(TAR_FILE)
-	cd $(OUTPUT_DIR); \
 	tar --disable-copyfile -cz --no-xattrs \
-	--exclude node_modules --exclude dist --exclude '.DS_Store' \
-	-f $(TAR_FILE) *
+	--exclude node_modules --exclude '.DS_Store' \
+	-f $(OUTPUT_DIR)/$(TAR_FILE) dist/*
 
 # Deploy the package to the remote server
 deploy: package
 	@echo "Creating directory on remote server..."
 	ssh $(SSH_USER)@$(SSH_HOST) "mkdir -p $(REMOTE_DIR)"
 	@echo "Deploying to $(SSH_HOST)..."
-	scp $(DIST_FILE) $(SSH_USER)@$(SSH_HOST):$(REMOTE_DIR)
+	scp $(OUTPUT_DIR)/$(TAR_FILE) $(SSH_USER)@$(SSH_HOST):$(REMOTE_DIR)
 
 run: build
 	node $(OUTPUT_DIR)/server.js

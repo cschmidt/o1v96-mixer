@@ -1,7 +1,7 @@
 import * as usb from 'usb'
 import { EventEmitter } from 'events'
 import * as messages from './messages'
-
+import { setTimeout } from "timers/promises"
 
 // USB Vendor ID for Yamaha
 const YAMAHA = 1177
@@ -82,32 +82,6 @@ function clamp(n : number, min: number, max: number) {
   } else {
     return n
   }
-}
-
-
-/**
- * Creates a message to set the mixer's fader level
- * @param channel the 1-indexed channel number
- * @param level decimal value from 0-100 (level is clamped to this range)
- * @returns 
- */
-export function createFaderLevelMessage(channel : number, level : number) {
-  // kInputFader
-  var messageBytes = 
-    MESSAGE_PREAMBLE.concat([0x1c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf7])
-
-  messageBytes[8] = channel - 1
-
-  let scaledLevel = 
-    clamp(Math.round(MAX_FADER_LEVEL * level / 100), 0, MAX_FADER_LEVEL)
-
-  var levelBytes = encode7Bit(scaledLevel)
-  if (levelBytes.length == 1) {
-    levelBytes.unshift(0)
-  }
-  messageBytes[11] = levelBytes[0]
-  messageBytes[12] = levelBytes[1]
-  return messageBytes
 }
 
 
@@ -231,9 +205,11 @@ export function connected() {
 }
 
 
-export function syncFaders() {
-  for(let channel = 1; channel++; channel <= 16) {
+export async function syncFaders() {
+  console.log('syncFaders')
+  for(let channel = 1; channel <= 16; channel++ ) {
     send(messages.kInputFaderRequest( channel))
+    await setTimeout(10)
   }
 }
 

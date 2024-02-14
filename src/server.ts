@@ -2,28 +2,29 @@ import express from 'express'
 import * as http from 'http'
 import WebSocket, { WebSocketServer } from 'ws'
 import * as mixer from './mixer'
-
-
+import {kInputFaderChange} from './messages'
 
 function handleMessage(rawMessage: object) {
   let message = JSON.parse(rawMessage.toString())
   console.log('parsed message', message)
   let scaledLevel = Math.round(mixer.MAX_FADER_LEVEL * message.level / 100)
-  let mixerMessage = mixer.createFaderLevelMessage(message.channel, scaledLevel)
+  let mixerMessage = kInputFaderChange(message.channel, scaledLevel)
   if (mixer.connected()) {
     mixer.send(mixerMessage)
   }
 }
 
-console.log(WebSocket)
+console.log('WebSocket', WebSocket)
 const wss = new WebSocketServer({ noServer: true })
 wss.on('connection', socket => {
   socket.on('message', message => handleMessage(message))
-  mixer.syncFaders()
+  if (mixer.connected()) {
+    mixer.syncFaders()
+  }
 })
 
 const app = express()
-app.use(express.static('dist'))
+app.use(express.static('dist/client/'))
 
 function cleanup(signal: String) {
   console.info(`${signal} received.`)
