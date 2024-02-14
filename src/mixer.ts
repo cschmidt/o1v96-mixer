@@ -10,8 +10,6 @@ const O1V96 = 20488
 export const MAX_FADER_LEVEL = 1023
 const USB_PACKET_SIZE = 64
 
-const MESSAGE_PREAMBLE = [0xf0, 0x43, 0x10, 0x3e, 0x7f, 0x01]
-
 let inEndpoint : usb.InEndpoint | undefined = undefined
 let outEndpoint : usb.OutEndpoint | undefined = undefined
 let mixer : usb.Device | undefined = undefined
