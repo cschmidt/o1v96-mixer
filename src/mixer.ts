@@ -1,7 +1,7 @@
 import * as usb from 'usb'
 import { EventEmitter } from 'events'
 import * as messages from './messages'
-import { setTimeout } from "timers/promises"
+import { asHexArray } from './util'
 
 // USB Vendor ID for Yamaha
 const YAMAHA = 1177
@@ -9,18 +9,29 @@ const YAMAHA = 1177
 const O1V96 = 20488
 export const MAX_FADER_LEVEL = 1023
 const USB_PACKET_SIZE = 64
+/** 
+ * Controls how often queued USB messages are sent to the mixer. Sending them
+ * too quickly (with no delay in between) seems to result in messages being
+ * dropped by the mixer. Perhaps there's some element of USB flow control
+ * I don't understand yet.
+ */
+const USB_MESSAGE_SEND_INTERVAL = 5
 
 let inEndpoint : usb.InEndpoint | undefined = undefined
 let outEndpoint : usb.OutEndpoint | undefined = undefined
 let mixer : usb.Device | undefined = undefined
 let kernelDriverActive : boolean = false
 let deviceInterface : usb.Interface | undefined = undefined
-
-
+let messageQueueTimeout : NodeJS.Timeout | undefined = undefined
+let messageSendStart : number = 0
+let currentMessage : Buffer = Buffer.from([])
 const FADER_MOVE = 'faderMove'
 const eventEmitter = new EventEmitter()
 
-
+/**
+ * Queues up outgoing USB messages bound for the mixer
+ */
+const messageQueue: number[][] = []
 
 function decode7Bit(msb: number, lsb:number) {
   return parseInt((msb << 7 | lsb).toString(2),2)
@@ -66,9 +77,14 @@ function messageFromData(data: number[]) {
 
 
 function handleTransferResult(error : usb.LibUSBException | undefined) {
+  // Right now I'm just logging if there's an error. Maybe this message is
+  // something I can use to signal flow control.
   if (error) {
     console.log("handleTransferResult", error)
   }
+  let messageSendDuration = Date.now() - messageSendStart
+  console.log(`Sent [${asHexArray([...currentMessage].slice(0,16))}] in ${messageSendDuration}ms`)
+  messageSendStart = 0
 }
 
 
@@ -121,12 +137,19 @@ function wrapSysexMessage(msg: Buffer) {
 
 
 export function send(msgBytes : number[]) {
-  var usbMessage = wrapSysexMessage(Buffer.from(msgBytes))
-  if (outEndpoint != undefined) {
-    console.log('Sending', usbMessage)
-    outEndpoint.transfer(usbMessage, handleTransferResult)
-  } else {
-    throw new Error("not connected")
+  messageQueue.push(msgBytes)
+}
+
+
+function sendQueuedMessage() {
+  if(messageQueue.length > 0 && outEndpoint != undefined) {
+    const msgBytes : number[]|undefined = messageQueue.shift()
+    if (msgBytes != undefined) {
+      const usbMessage = wrapSysexMessage(Buffer.from(msgBytes))
+      currentMessage = usbMessage
+      messageSendStart = Date.now()
+      outEndpoint.transfer(usbMessage, handleTransferResult)
+    }
   }
 }
 
@@ -153,6 +176,7 @@ export function connect() {
   
   if (deviceInterface.endpoints[0] instanceof usb.OutEndpoint) {
     outEndpoint = deviceInterface.endpoints[0]
+    console.log({outEndpoint})
   }
   if (deviceInterface.endpoints[1] instanceof usb.InEndpoint) {
     inEndpoint = deviceInterface.endpoints[1]
@@ -162,16 +186,18 @@ export function connect() {
       console.log(message)
       eventEmitter.emit(FADER_MOVE, message)
     })
-    inEndpoint.startPoll(3, 64)
+    inEndpoint.startPoll(10, 64)
   }
-  
+  messageQueueTimeout = setInterval(sendQueuedMessage, USB_MESSAGE_SEND_INTERVAL)
   console.log('Connected')
+  
   return 1
 }
 
 
 export function disconnect() {
   console.log('Disconnecting...')
+  clearInterval(messageQueueTimeout)
   if (inEndpoint != undefined) {
     inEndpoint.stopPoll(() => {
       if (deviceInterface != undefined) {
@@ -207,7 +233,6 @@ export async function syncFaders() {
   console.log('syncFaders')
   for(let channel = 1; channel <= 16; channel++ ) {
     send(messages.kInputFaderRequest( channel))
-    await setTimeout(10)
   }
 }
 
